@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->string('review', 1000);
             $table->binary('thumbnail');
             $table->foreignId('iduser');
+            $table->integer('ncomments');
+            $table->decimal('stars', 3, 2);
             $table->foreign('iduser')->references('id')->on('users');
             $table->timestamps();
         });

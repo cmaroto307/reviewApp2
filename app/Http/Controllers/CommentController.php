@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,15 @@ class CommentController extends Controller {
             try {
                 $idreview = $comment->idreview;
                 $comment->delete();
+                $review = Review::where('id', $idreview)->first();
+                $review->ncomments--;
+                $stars = 0;
+                foreach($review->comments as $comment) {
+                    $stars += $comment->stars;
+                }
+                $stars = $stars/$review->ncomments;
+                $review->stars = $stars;
+                $review->save();
                 return redirect('review/' . $idreview);
             }catch(\Exception $e) {
                 return back() ->withErrors(['message' => 'An unexpected error occurred while deleting']);
@@ -50,6 +60,17 @@ class CommentController extends Controller {
                 $comment->text = $request->text;
                 $comment->stars = $request->stars;
                 $comment->save();
+                
+                $idreview = $comment->idreview;
+                $review = Review::where('id', $idreview)->first();
+                $review->ncomments++;
+                $stars = 0;
+                foreach($review->comments as $comment) {
+                    $stars += $comment->stars;
+                }
+                $stars = $stars/$review->ncomments;
+                $review->stars = $stars;
+                $review->save();
                 return redirect('review/' . $request->idreview);
             }catch(\Exception $e) {
                 return back()->withErrors(['message' => 'An unexpected error occurred while creating']);
@@ -65,6 +86,16 @@ class CommentController extends Controller {
                 $comment->text = $request->text;
                 $comment->stars = $request->stars;
                 $comment->update();
+                
+                $idreview = $comment->idreview;
+                $review = Review::where('id', $idreview)->first();
+                $stars = 0;
+                foreach($review->comments as $comment) {
+                    $stars += $comment->stars;
+                }
+                $stars = $stars/$review->ncomments;
+                $review->stars = $stars;
+                $review->save();
                 return redirect('review/' . $comment->idreview);
             }catch(\Exception $e) {
                 return back()->withErrors(['message' => 'An unexpected error occurred while updating']);

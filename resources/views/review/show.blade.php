@@ -32,13 +32,9 @@
                             <div><i class="fa fa-pencil"></i>{{ $review->user->name }}</div> | 
                             <div>
                             	<?php
-					        	$count_comments = count($review->comments);
+					        	$count_comments = $review->ncomments;
 		                    	if($count_comments>0){
-		                    		$stars = 0;
-		                    		foreach($review->comments as $comment){
-		                        		$stars += $comment->stars;
-		                    		}
-		                    		$stars = $stars/$count_comments;
+		                    		$stars = $review->stars;
 		                    		for($i=1; $i<=5; $i++){
 		                    			if($i<=$stars){
 		                            		?>

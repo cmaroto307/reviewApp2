@@ -16,6 +16,65 @@ class ReviewController extends Controller {
         $this->middleware('auth', ['except' => ['index']]);
     }
     
+    public function all(Request $request) {
+        $searchreview = $request->searchreview;
+        $filtertype = $request->filtertype;
+        $filterstars = $request->filterstars;
+        $orderby = $request->orderby;
+        $items_per_page = $request->items_per_page;
+        
+        $reviews_pagination = null;
+        $count_type_film = 0;
+        $count_type_book = 0;
+        $count_type_record = 0;
+        
+        $last_reviews = Review::orderBy('created_at', 'desc')->get();
+        $reviews = $last_reviews;
+        $reviews_pagination = array();
+    	foreach($reviews as $review) {
+    		$count_comments = count($review->comments);
+    		$stars = 0;
+    		foreach($review->comments as $comment){
+        		$stars += $comment->stars;
+    		}
+    		if($count_comments>0) {
+    		    $stars = $stars/$count_comments;
+    		}
+    		$reviews_pagination[] = [
+    			"id"             => $review->id,
+    			"nombre"         => $review->nombre,
+    			"tipo"           => $review->tipo,
+    			"review"         => $review->review,
+    			"thumbnail"      => $review->thumbnail,
+    			"username"       => $review->user->name,
+    			"created_at"     => $review->created_at,
+    			"count_comments" => $count_comments,
+    			"stars"          => $stars,
+    		];
+    		if($review->tipo == 'film') {
+    		    $count_type_film++;
+    		}else if($review->tipo == 'book') {
+    		    $count_type_book++;
+    		}else if($review->tipo == 'record') {
+    		    $count_type_record++;
+    		}
+    	}
+        
+        $types = [
+            'film'   => 'Film',
+            'book'   => 'Book',
+            'record' => 'Record',
+        ];
+        return view('review.all', [
+            'reviews'           => $reviews_pagination,
+            'last_reviews'      => $last_reviews,
+            'types'             => $types,
+            'count_type_film'   => $count_type_film,
+            'count_type_book'   => $count_type_book,
+            'count_type_record' => $count_type_record,
+        ]);
+    }
+    
     public function books() {
         $reviews = Review::orderBy('created_at', 'desc')->get();
         return view('review.books', ['reviews' => $reviews]);
@@ -108,6 +167,8 @@ class ReviewController extends Controller {
                     $review->thumbnail = base64_encode($thumbnail);
                 }
                 $review->iduser = Auth::user()->id;
+                $review->ncomments = 0;
+                $review->stars = 0;
                 $review->save();
                 if($request->images){
                     $img = new Image();

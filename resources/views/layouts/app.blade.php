@@ -84,6 +84,9 @@
                             <a href="{{ url('/') }}" class="nav-link title text-uppercase font-montserrat color-dark">Home</a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ url('reviews/all') }}" class="nav-link title text-uppercase font-montserrat color-dark">All</a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ url('reviews/film') }}" class="nav-link title text-uppercase font-montserrat color-dark">Films</a>
                         </li>
                         <li class="nav-item">
@@ -157,6 +160,7 @@
                             <div class="col-sm-12">
                                 <ul class=" bb-solid-1">
                                     <li><a href="{{ url('/') }}">Home</a></li>
+                                    <li><a href="{{ url('reviews/all') }}">All</a></li>
                                     <li><a href="{{ url('reviews/film') }}">Films</a></li>
                                     <li><a href="{{ url('reviews/book') }}">Books</a></li>
                                     <li><a href="{{ url('reviews/record') }}">Records</a></li>

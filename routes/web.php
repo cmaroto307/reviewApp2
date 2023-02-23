@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Auth::routes(['verify' => true]);
 
 Route::get('/', [App\Http\Controllers\ReviewController::class, 'index']);
+Route::get('reviews/all', [App\Http\Controllers\ReviewController::class, 'all']);
 Route::get('reviews/film', [App\Http\Controllers\ReviewController::class, 'films'])->name('films');
 Route::get('reviews/book', [App\Http\Controllers\ReviewController::class, 'books'])->name('books');
 Route::get('reviews/record', [App\Http\Controllers\ReviewController::class, 'records'])->name('records');

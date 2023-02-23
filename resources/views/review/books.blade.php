@@ -29,13 +29,9 @@
 			        </p>
 			        <div class="mt10 pt10 bt-dotted-1">
 			        	<?php
-			        	$count_comments = count($review->comments);
+			        	$count_comments = $review->ncomments;
                     	if($count_comments>0){
-                    		$stars = 0;
-                    		foreach($review->comments as $comment){
-                        		$stars += $comment->stars;
-                    		}
-                    		$stars = $stars/$count_comments;
+                    		$stars = $review->stars;
                     		for($i=1; $i<=5; $i++){
                     			if($i<=$stars){
                             		?>
