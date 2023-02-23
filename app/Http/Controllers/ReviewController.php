@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -23,34 +24,11 @@ class ReviewController extends Controller {
         $orderby = $request->orderby;
         $items_per_page = $request->items_per_page;
         
-        $reviews_pagination = null;
+        $last_reviews = Review::orderBy('created_at', 'desc')->get();
         $count_type_film = 0;
         $count_type_book = 0;
         $count_type_record = 0;
-        
-        $last_reviews = Review::orderBy('created_at', 'desc')->get();
-        $reviews = $last_reviews;
-        $reviews_pagination = array();
-    	foreach($reviews as $review) {
-    		$count_comments = count($review->comments);
-    		$stars = 0;
-    		foreach($review->comments as $comment){
-        		$stars += $comment->stars;
-    		}
-    		if($count_comments>0) {
-    		    $stars = $stars/$count_comments;
-    		}
-    		$reviews_pagination[] = [
-    			"id"             => $review->id,
-    			"nombre"         => $review->nombre,
-    			"tipo"           => $review->tipo,
-    			"review"         => $review->review,
-    			"thumbnail"      => $review->thumbnail,
-    			"username"       => $review->user->name,
-    			"created_at"     => $review->created_at,
-    			"count_comments" => $count_comments,
-    			"stars"          => $stars,
-    		];
+    	foreach($last_reviews as $review) {
     		if($review->tipo == 'film') {
     		    $count_type_film++;
     		}else if($review->tipo == 'book') {
@@ -59,19 +37,78 @@ class ReviewController extends Controller {
     		    $count_type_record++;
     		}
     	}
+    	
+        $reviews = DB::table('review')
+                    ->join('users', 'users.id', '=', 'review.iduser')
+                    ->select('review.*', 'users.name as username');
+
+        if($searchreview != '') {
+            $reviews = $reviews->where('review.nombre', 'like', '%' . $searchreview . '%')
+                                ->orWhere('review.created_at', 'like', '%' . $searchreview . '%')
+                                ->orWhere('review.tipo', 'like', '%' . $searchreview . '%')
+                                ->orWhere('users.name', 'like', '%' . $searchreview . '%');
+        }
+
+        if($filtertype != '') {
+            if($filtertype == 't1') {
+                $reviews = $reviews->where('review.tipo', '=', 'film');
+            } else if($filtertype == 't2') {
+                $reviews = $reviews->where('review.tipo', '=', 'book');
+            } else if($filtertype == 't3') {
+                $reviews = $reviews->where('review.tipo', '=', 'record');
+            }
+        }
+
+        if($filterstars != '') {
+            $min_stars = 0;
+            if($filterstars == 's1') {
+                $min_stars = 1;
+            } else if($filterstars == 's2') {
+                $min_stars = 2;
+            } else if($filterstars == 's3') {
+                $min_stars = 3;
+            } else if($filterstars == 's4') {
+                $min_stars = 4;
+            }
+            $reviews = $reviews->where('review.stars', '>=', $min_stars);
+        }
         
-        $types = [
-            'film'   => 'Film',
-            'book'   => 'Book',
-            'record' => 'Record',
-        ];
+        if($orderby != 0) {
+            if($orderby == 'o1') {
+                $reviews = $reviews->orderBy('stars', 'desc');
+            } else if($orderby == 'o2') {
+                $reviews = $reviews->orderBy('ncomments', 'desc');
+            } else if($orderby == 'o3') {
+                $reviews = $reviews->orderBy('nombre', 'asc');
+            } else if($orderby == 'o4') {
+                $reviews = $reviews->latest();
+            }
+        }
+        
+        $num_items_page = 3;
+        if($items_per_page != '') {
+            if($items_per_page == 'p1') {
+                $num_items_page = 3;
+            } else if($items_per_page == 'p2') {
+                $num_items_page = 5;
+            } else if($items_per_page == 'p3') {
+                $num_items_page = 10;
+            }
+        }
+        
+        $reviews = $reviews->paginate($num_items_page)->withQueryString();
+    	
         return view('review.all', [
-            'reviews'           => $reviews_pagination,
+            'reviews'           => $reviews,
             'last_reviews'      => $last_reviews,
-            'types'             => $types,
             'count_type_film'   => $count_type_film,
             'count_type_book'   => $count_type_book,
             'count_type_record' => $count_type_record,
+            'searchreview'      => $searchreview,
+            'filtertype'        => $filtertype,
+            'filterstars'       => $filterstars,
+            'orderby'           => $orderby,
+            'items_per_page'    => $items_per_page,
         ]);
     }
     
