@@ -1,0 +1,31 @@
+.navbar-collapse ul {
+    float: right;
+}
+
+.navbar-nav li {
+    margin: 0px 10px;
+}
+
+.main-color {
+    color: #ff4530;
+}
+
+.tarjet {
+    padding: 10px;
+    text-align: center;
+}
+
+.border-review-form {
+    border: 1px solid #ff4530;
+}
+
+.bg-ff4530 {
+    background: #ff4530;
+}
+
+.link-delete{
+    -webkit-appearance: none;
+    border: none;
+    background: none;
+    margin-right: 10px;
+}
